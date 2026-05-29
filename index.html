@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deseal Adventures - Explore the Cosmos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            950: '#030712',
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#1f2937',
+                        },
+                        cosmic: {
+                            purple: '#8b5cf6',
+                            magenta: '#d946ef',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+    <!-- Three.js (For 3D Planet Preview) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .cosmic-gradient {
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.1), transparent);
+        }
+        .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-cyan:hover {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+        .glow-purple:hover {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="cosmic-gradient min-h-screen selection:bg-cosmic-purple selection:text-white">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- SVG Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="scrollToSection('hero')">
+                    <div class="relative w-12 h-12 flex items-center justify-center bg-gradient-to-tr from-cosmic-purple via-indigo-600 to-cosmic-cyan rounded-xl shadow-lg shadow-cosmic-purple/20">
+                        <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Styled custom 'D' with orbiting celestial ring -->
+                            <path d="M5 3H11C15.9706 3 20 7.02944 20 12C20 16.9706 15.9706 21 11 21H5V3Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M5 12H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <ellipse cx="11" cy="12" rx="9" ry="2" transform="rotate(-30 11 12)" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="3 2" />
+                            <circle cx="17" cy="6" r="1.5" fill="#f43f5e" />
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-200 to-cosmic-cyan bg-clip-text text-transparent">
+                            DESEAL
+                        </span>
+                        <span class="block text-xs font-semibold tracking-widest text-cosmic-cyan uppercase">ADVENTURES</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Items -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="scrollToSection('explorer')" class="text-gray-300 hover:text-cosmic-cyan transition-colors text-sm font-medium tracking-wide">Planets Hub</button>
+                    <button onclick="scrollToSection('ai-guide')" class="text-gray-300 hover:text-cosmic-purple transition-colors text-sm font-medium tracking-wide">Cosmic Guide</button>
+                    <button onclick="scrollToSection('reviews')" class="text-gray-300 hover:text-cosmic-cyan transition-colors text-sm font-medium tracking-wide">Expeditions</button>
+                    <button onclick="openBookingModal()" class="px-5 py-2.5 bg-gradient-to-r from-cosmic-cyan to-blue-600 text-white rounded-lg text-sm font-bold tracking-wider hover:opacity-90 glow-cyan transition-all uppercase">
+                        Book Now
+                    </button>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu panel -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-white/5 py-4 px-6 space-y-3">
+            <button onclick="scrollToSection('explorer'); toggleMobileMenu();" class="block w-full text-left py-2 text-gray-300 hover:text-cosmic-cyan font-medium">Planets Hub</button>
+            <button onclick="scrollToSection('ai-guide'); toggleMobileMenu();" class="block w-full text-left py-2 text-gray-300 hover:text-cosmic-purple font-medium">Cosmic Guide</button>
+            <button onclick="scrollToSection('reviews'); toggleMobileMenu();" class="block w-full text-left py-2 text-gray-300 hover:text-cosmic-cyan font-medium">Expeditions</button>
+            <button onclick="openBookingModal(); toggleMobileMenu();" class="w-full text-center py-3 bg-gradient-to-r from-cosmic-cyan to-blue-600 text-white font-bold rounded-lg uppercase tracking-wider block">
+                Book Adventure Now
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden">
+        <!-- Floating Ambient Glows -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-cosmic-purple/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cosmic-cyan/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 py-12">
+            <!-- Text Content -->
+            <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+                <div class="inline-flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-semibold text-cosmic-cyan uppercase tracking-widest">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cosmic-cyan"></i>
+                    <span>Luxury Planetary Travel Agency</span>
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-none text-white">
+                    Explore Beyond The <br>
+                    <span class="bg-gradient-to-r from-cosmic-cyan via-cosmic-purple to-cosmic-magenta bg-clip-text text-transparent">
+                        Known Horizon.
+                    </span>
+                </h1>
+                <p class="text-lg text-gray-400 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
+                    Deseal Adventures guarantees safety, unmatched style, and breathtaking wonder as we voyage to pristine exoplanets, stellar rings, and super-earths. Book your next giant leap today.
+                </p>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                    <button onclick="scrollToSection('explorer')" class="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-100 text-space-950 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
+                        <span>Launch Planet Hub</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5 text-space-950"></i>
+                    </button>
+                    <button onclick="openBookingModal()" class="w-full sm:w-auto px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-bold rounded-xl transition-all flex items-center justify-center space-x-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-cosmic-cyan"></i>
+                        <span>Secure Booking Slot</span>
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-6 pt-12 border-t border-white/5 max-w-md mx-auto lg:mx-0">
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-white">12+</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Exoplanets</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-cosmic-cyan">100%</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Safe Return</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl sm:text-3xl font-extrabold text-cosmic-purple">4.9/5</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Traveller Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive 3D Canvas / Mockup -->
+            <div class="lg:col-span-5 relative flex items-center justify-center">
+                <div class="relative w-80 h-80 sm:w-[450px] sm:h-[450px] rounded-full border border-white/5 flex items-center justify-center">
+                    <!-- Spinning Rings Decorative -->
+                    <div class="absolute inset-0 border-2 border-dashed border-cosmic-cyan/20 rounded-full animate-[spin_40s_linear_infinite]"></div>
+                    <div class="absolute inset-6 border border-dotted border-cosmic-purple/30 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
+                    
+                    <!-- Main 3D Canvas Container -->
+                    <div id="three-canvas-container" class="absolute w-64 h-64 sm:w-[350px] sm:h-[350px] rounded-full overflow-hidden cursor-grab active:cursor-grabbing"></div>
+                    
+                    <!-- Decorative HUD details -->
+                    <div class="absolute top-4 right-4 glass px-3 py-1.5 rounded-lg border border-white/10 flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-[10px] font-mono text-emerald-400 tracking-wider">3D ENGINE ACTIVE</span>
+                    </div>
+                    <div class="absolute bottom-4 left-4 glass px-3 py-1 rounded-lg border border-white/10">
+                        <span class="text-[9px] font-mono text-gray-400 block uppercase">Spinning Hologram</span>
+                        <span class="text-[10px] font-bold text-cosmic-cyan tracking-widest uppercase" id="canvas-planet-name">Kepler-22b</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE PLANET EXPLORER -->
+    <section id="explorer" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <div class="text-xs font-bold text-cosmic-purple tracking-widest uppercase">Select Your Horizon</div>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Interactive Planet Hub</h2>
+                <p class="text-gray-400 font-light">
+                    Every world has its rhythm. Click on any planet below to study atmospheric specs, look over flight times, modify the 3D hologram preview above, and select your flight.
+                </p>
+            </div>
+
+            <!-- Planet Selector Row -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-12" id="planet-tabs">
+                <!-- Tabs generated by JS dynamically -->
+            </div>
+
+            <!-- Interactive Details Panel (Split Grid) -->
+            <div id="planet-details-card" class="glass rounded-3xl p-6 sm:p-10 border border-white/10 shadow-2xl transition-all duration-500 relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none" id="planet-blur-bg"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    <!-- Text Details -->
+                    <div class="lg:col-span-7 space-y-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <span class="text-xs font-mono text-cosmic-cyan tracking-widest uppercase block" id="planet-code">SECTOR 4G</span>
+                                <h3 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight" id="planet-title">Kepler-22b</h3>
+                            </div>
+                            <div class="glass px-4 py-2 rounded-xl border border-white/10 shrink-0 text-center sm:text-left">
+                                <span class="text-[10px] text-gray-400 block uppercase tracking-wider">Est. Flight Duration</span>
+                                <span class="text-lg font-bold text-white font-mono" id="planet-duration">47 Days (Standard)</span>
+                            </div>
+                        </div>
+
+                        <p class="text-gray-300 leading-relaxed font-light" id="planet-desc">
+                            A super-Earth orbiting in the habitable zone of a solar-type star. It features global oceans, endless shorelines, and floating resort platforms ideal for aquatic exploration and zero-gravity water gliding.
+                        </p>
+
+                        <!-- Fast Stats Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                                <span class="text-xs text-gray-400 block mb-1">Atmosphere</span>
+                                <span class="text-sm font-bold text-white" id="planet-atmosphere">N2, O2, H2O</span>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                                <span class="text-xs text-gray-400 block mb-1">Gravity</span>
+                                <span class="text-sm font-bold text-white" id="planet-gravity">2.4x Earth</span>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                                <span class="text-xs text-gray-400 block mb-1">Avg Temp</span>
+                                <span class="text-sm font-bold text-white" id="planet-temp">22°C</span>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                                <span class="text-xs text-gray-400 block mb-1">Hazard Level</span>
+                                <span class="text-sm font-bold text-red-400" id="planet-hazard">Low</span>
+                            </div>
+                        </div>
+
+                        <!-- Highlights list -->
+                        <div>
+                            <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center space-x-2">
+                                <i data-lucide="compass" class="w-4 h-4 text-cosmic-cyan"></i>
+                                <span>Signature Excursions & Packages</span>
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="planet-activities">
+                                <!-- Dynamic JS injection -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Side Interactive Booking Hub Interface -->
+                    <div class="lg:col-span-5 glass p-6 rounded-2xl border border-white/10 space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                            <div>
+                                <span class="text-xs text-gray-400 block">Pricing Starts From</span>
+                                <span class="text-2xl font-extrabold text-cosmic-cyan font-mono" id="planet-price">$14,500</span>
+                            </div>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded bg-cosmic-cyan/10 text-cosmic-cyan border border-cosmic-cyan/20">ALL-INCLUSIVE</span>
+                        </div>
+
+                        <!-- Amenities quick preview list -->
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3 text-sm text-gray-300">
+                                <i data-lucide="check-circle-2" class="w-4.5 h-4.5 text-emerald-400"></i>
+                                <span>Cryo-sleep pod included</span>
+                            </div>
+                            <div class="flex items-center space-x-3 text-sm text-gray-300">
+                                <i data-lucide="check-circle-2" class="w-4.5 h-4.5 text-emerald-400"></i>
+                                <span>Cosmic hazard & radiation insurance</span>
+                            </div>
+                            <div class="flex items-center space-x-3 text-sm text-gray-300">
+                                <i data-lucide="check-circle-2" class="w-4.5 h-4.5 text-emerald-400"></i>
+                                <span>Personalized hazard Exosuit</span>
+                            </div>
+                        </div>
+
+                        <!-- CTA Book -->
+                        <div class="pt-4">
+                            <button onclick="openBookingModalWithPlanet()" class="w-full py-4 bg-gradient-to-r from-cosmic-cyan via-indigo-600 to-cosmic-purple text-white font-bold rounded-xl shadow-lg glow-cyan transition-all flex items-center justify-center space-x-3 uppercase tracking-wider text-sm">
+                                <span>Initiate Booking Pipeline</span>
+                                <i data-lucide="rocket" class="w-5 h-5 text-white animate-[bounce_1.5s_infinite]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GEMINI COSMIC AI TRAVEL GUIDE -->
+    <section id="ai-guide" class="py-24 relative border-t border-white/5 bg-space-950/40">
+        <div class="absolute inset-y-0 right-0 w-1/3 bg-cosmic-purple/5 blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left: Guide Explainer Text -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="inline-flex items-center space-x-2 bg-cosmic-purple/10 border border-cosmic-purple/20 px-4 py-1.5 rounded-full text-xs font-semibold text-cosmic-purple uppercase tracking-widest">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                        <span>AI Galactic Assistant</span>
+                    </div>
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+                        Consult Our Planetary Intel
+                    </h2>
+                    <p class="text-gray-400 font-light leading-relaxed">
+                        Curious about thermal shield ratings? Want customized safety guidelines, what to pack for Europa's oceans, or a complete 3-day itinerary on Mars? Ask our advanced flight dispatcher powered by Gemini AI.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="p-2 bg-white/5 rounded-lg border border-white/10 mt-1">
+                                <i data-lucide="shield-check" class="w-5 h-5 text-cosmic-cyan"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white">Pre-Flight Safety Verifications</h4>
+                                <p class="text-xs text-gray-400">Instantly generate customizable lists and safety drills.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-2 bg-white/5 rounded-lg border border-white/10 mt-1">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-cosmic-purple"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white">Dynamic Planetary Coordinates</h4>
+                                <p class="text-xs text-gray-400 font-light">Custom astronomical distances calculated dynamically.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Interactive Chat Terminal -->
+                <div class="lg:col-span-7">
+                    <div class="glass rounded-2xl border border-white/10 overflow-hidden shadow-2xl flex flex-col h-[500px]">
+                        
+                        <!-- Terminal Header -->
+                        <div class="bg-space-950/80 px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-xs font-mono text-gray-400 ml-2">DESEAL_AI_BOT_V2.5.exe</span>
+                            </div>
+                            <span class="text-[10px] font-mono text-cosmic-cyan bg-cosmic-cyan/10 px-2 py-0.5 rounded uppercase">Connected</span>
+                        </div>
+
+                        <!-- Chat Output -->
+                        <div id="ai-chat-output" class="flex-1 p-6 overflow-y-auto space-y-4 font-mono text-sm leading-relaxed">
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-xl text-gray-300">
+                                <span class="text-cosmic-cyan font-bold block mb-1">SYSTEM INSTANCE ACTIVE</span>
+                                Welcome to Deseal Galactic Intel. Tell me which exoplanet you are interested in exploring, and I will compile real-time atmospheric data, essential gear lists, and coordinates.
+                            </div>
+                        </div>
+
+                        <!-- Presets / Quick Prompt Pills -->
+                        <div class="px-6 py-2 bg-white/5 border-t border-white/5 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+                            <button onclick="setAiPrompt('What gear do I need to survive Europa ocean tour?')" class="text-[11px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-full border border-white/5 transition-all">
+                                🎒 Gear Checklist for Europa
+                            </button>
+                            <button onclick="setAiPrompt('Generate a fun 3-day tourist itinerary on Mars.')" class="text-[11px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-full border border-white/5 transition-all">
+                                📅 3 Days on Mars
+                            </button>
+                            <button onclick="setAiPrompt('Compare travel safety of Titan vs Kepler-22b.')" class="text-[11px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-3 py-1.5 rounded-full border border-white/5 transition-all">
+                                ⚖️ Titan vs Kepler-22b
+                            </button>
+                        </div>
+
+                        <!-- Chat Input Bar -->
+                        <div class="p-4 bg-space-950/80 border-t border-white/5">
+                            <form id="ai-query-form" class="flex items-center space-x-2">
+                                <input type="text" id="ai-query-input" placeholder="Query planetary survival guidelines, safe seasons, flight speed..." required class="flex-1 bg-white/5 border border-white/10 focus:border-cosmic-purple focus:ring-1 focus:ring-cosmic-purple rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 outline-none transition-all">
+                                <button type="submit" class="p-3 bg-cosmic-purple hover:bg-cosmic-purple/80 text-white rounded-xl transition-all flex items-center justify-center shrink-0">
+                                    <i data-lucide="send" class="w-5 h-5"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS / ADVENTURE REVIEWS -->
+    <section id="reviews" class="py-24 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs font-bold text-cosmic-cyan tracking-widest uppercase">Pioneers of the Void</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Memories from Extraterrestrial Journeys</h2>
+                <p class="text-gray-400 font-light">Explore honest accounts of deep-space luxury excursions narrated by planetary travelers who ventured beyond gravity.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="glass p-8 rounded-2xl border border-white/10 relative flex flex-col justify-between hover:border-cosmic-cyan/30 transition-all duration-300">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                        <p class="text-gray-300 italic font-light text-sm">
+                            "The sub-glacial ocean sub trip on Europa was absolutely life-changing. Witnessing massive bioluminescent organisms through custom observation bays was worth every million credits."
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-6 border-t border-white/5 mt-6">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cosmic-cyan to-cosmic-purple flex items-center justify-center text-sm font-bold text-white">
+                            EM
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Evelyn Mercer</h4>
+                            <span class="text-xs text-cosmic-cyan font-mono">Kepler-22b Voyager</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="glass p-8 rounded-2xl border border-white/10 relative flex flex-col justify-between hover:border-cosmic-purple/30 transition-all duration-300">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                        <p class="text-gray-300 italic font-light text-sm">
+                            "I was skeptical about the gravity variations on Kepler-186f, but the luxury flight cabins made accommodation feel exactly like home, with unparalleled deep sunset views over crimson foliage."
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-6 border-t border-white/5 mt-6">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cosmic-purple to-cosmic-magenta flex items-center justify-center text-sm font-bold text-white">
+                            JK
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Julian Vance</h4>
+                            <span class="text-xs text-cosmic-purple font-mono">Kepler-186f Pioneer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="glass p-8 rounded-2xl border border-white/10 relative flex flex-col justify-between hover:border-cosmic-cyan/30 transition-all duration-300">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                        <p class="text-gray-300 italic font-light text-sm">
+                            "Deseal Adventures managed the entire flight transition flawlessly. Safe transit through asteroid belts and the outstanding luxury zero-g room service was breathtaking."
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-6 border-t border-white/5 mt-6">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-cosmic-cyan flex items-center justify-center text-sm font-bold text-white">
+                            SL
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Sasha Lowen</h4>
+                            <span class="text-xs text-cosmic-cyan font-mono">Europa Explorer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/5 bg-space-950 py-16 text-gray-500 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 flex items-center justify-center bg-gradient-to-tr from-cosmic-purple to-cosmic-cyan rounded-lg">
+                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 3H11C15.9706 3 20 7.02944 20 12C20 16.9706 15.9706 21 11 21H5V3Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-bold text-white tracking-wider">DESEAL</span>
+                </div>
+                <p class="text-xs text-gray-400 font-light">
+                    The premium interstellar explorer company. Making space luxury tourism accessible since cosmic dawn.
+                </p>
+            </div>
+            <div>
+                <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-4">Destinations</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" onclick="scrollToSection('explorer'); return false;" class="hover:text-white transition-colors">Kepler-22b Ocean World</a></li>
+                    <li><a href="#" onclick="scrollToSection('explorer'); return false;" class="hover:text-white transition-colors">Europa Water Excursions</a></li>
+                    <li><a href="#" onclick="scrollToSection('explorer'); return false;" class="hover:text-white transition-colors">Mars Volcano Treks</a></li>
+                    <li><a href="#" onclick="scrollToSection('explorer'); return false;" class="hover:text-white transition-colors">Kepler-186f Red Foliage</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-4">Information</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" class="hover:text-white transition-colors">Quantum Security Protocols</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Life Support Insurance</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Void Space Flight</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Stellar Quarantine Terms</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-4">Cosmic Dispatch</h4>
+                <p class="text-xs text-gray-400 mb-4">Sign up to receive quantum updates of new exoplanets opened for tourism.</p>
+                <div class="flex">
+                    <input type="email" placeholder="Your transmission coordinate..." class="w-full bg-white/5 border border-white/10 rounded-l-lg px-3 py-2 text-xs focus:outline-none focus:border-cosmic-cyan text-white">
+                    <button class="bg-cosmic-cyan text-space-950 px-3 py-2 rounded-r-lg font-bold text-xs hover:bg-cosmic-cyan/90 transition-colors">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-white/5 pt-8 text-center text-xs">
+            &copy; 2026 Deseal Adventures Interstellar. All solar systems registered. Powered by quantum gravitational thrusts.
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE "BOOK NOW" MULTI-STEP MODAL -->
+    <div id="booking-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-space-950/90 backdrop-blur-md transition-opacity"></div>
+
+        <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-6 lg:p-8 relative">
+            <div class="glass max-w-2xl w-full rounded-3xl border border-white/10 overflow-hidden shadow-2xl text-left relative transition-all flex flex-col max-h-[90vh]">
+                
+                <!-- Modal Header -->
+                <div class="px-6 py-5 bg-space-950/80 border-b border-white/5 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="rocket" class="w-5 h-5 text-cosmic-cyan"></i>
+                        <h3 class="text-lg font-bold text-white tracking-wide">Planetary Flight Dispatch Pipeline</h3>
+                    </div>
+                    <button onclick="closeBookingModal()" class="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Steps indicators -->
+                <div class="px-6 py-3 bg-white/5 border-b border-white/5 grid grid-cols-3 text-center text-xs">
+                    <div id="step-tab-1" class="font-bold text-cosmic-cyan pb-1 border-b-2 border-cosmic-cyan">1. Traveller Profile</div>
+                    <div id="step-tab-2" class="font-medium text-gray-400 pb-1">2. Target Coordinates</div>
+                    <div id="step-tab-3" class="font-medium text-gray-400 pb-1">3. Interstellar Pass</div>
+                </div>
+
+                <!-- Modal Body Scrollable -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                    
+                    <!-- STEP 1: Traveler Profile -->
+                    <div id="step-1" class="space-y-4">
+                        <h4 class="text-sm font-bold text-white uppercase tracking-wider">Explorer Personal Records</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Full Name (Primary Pilot)</label>
+                                <input type="text" id="book-name" placeholder="E.g., Commander Neil" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Earth Origin City / Space Station</label>
+                                <input type="text" id="book-origin" placeholder="E.g., Neo Tokyo / Lunar Station 4" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Cosmic Age (Standard Years)</label>
+                                <input type="number" id="book-age" min="18" max="150" value="28" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Gravity Adaptation Fitness Tier</label>
+                                <select id="book-fitness" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all bg-space-900">
+                                    <option class="bg-space-950" value="Trained Class A">Trained Class A (High Gravity Ready)</option>
+                                    <option class="bg-space-950" value="General Passenger">General Passenger (Basic Zero-G Prep)</option>
+                                    <option class="bg-space-950" value="Senior Colonist">Senior Colonist (Low Gravity Habitats)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Target & Flights Selection -->
+                    <div id="step-2" class="space-y-4 hidden">
+                        <h4 class="text-sm font-bold text-white uppercase tracking-wider">Planetary Coordinates Configuration</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Destination Exoplanet</label>
+                                <select id="book-planet" onchange="updateBookingCostCalculation()" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all bg-space-900">
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1.5 font-medium">Flight Cabin Class</label>
+                                <select id="book-cabin" onchange="updateBookingCostCalculation()" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cosmic-cyan transition-all bg-space-900">
+                                    <option value="economy" class="bg-space-950">Quantum Suite (Standard Class) - Base Price</option>
+                                    <option value="premium" class="bg-space-950">Gravity Penthouse (+50% Rate)</option>
+                                    <option value="starlight" class="bg-space-950">Starlight Solarium Suite (+120% Rate)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Amenities list interactive checkboxes -->
+                        <div class="space-y-3 pt-2">
+                            <label class="block text-xs text-gray-400 font-medium">Cosmic Flight Add-Ons</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="flex items-center space-x-3 bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-cosmic-cyan/30 transition-all">
+                                    <input type="checkbox" id="add-spacewalk" onchange="updateBookingCostCalculation()" class="rounded bg-white/5 border-white/10 text-cosmic-cyan focus:ring-0">
+                                    <span class="text-xs text-gray-200">Extravehicular Spacewalk Training (+$2,500)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-cosmic-purple/30 transition-all">
+                                    <input type="checkbox" id="add-copilot" onchange="updateBookingCostCalculation()" class="rounded bg-white/5 border-white/10 text-cosmic-purple focus:ring-0">
+                                    <span class="text-xs text-gray-200">AI Personal Flight Co-Pilot (+$1,200)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic cost calculator display -->
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-gray-400 block uppercase font-medium">Interstellar Fuel Cost Estimate</span>
+                                <span class="text-xs text-gray-500 font-mono">Formula: Base Price * Class multiplier + Addons</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl font-extrabold text-cosmic-cyan font-mono" id="booking-live-price">$14,500</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Boarding Pass Generation & Souvenir Generator -->
+                    <div id="step-3" class="space-y-6 hidden">
+                        <div class="text-center space-y-2">
+                            <div class="inline-flex items-center justify-center p-2 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20">
+                                <i data-lucide="check-circle" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white">Boarding Authorization Granted</h4>
+                            <p class="text-xs text-gray-400 font-light">Your orbital slot and custom life support pod are secured at the Launchpad.</p>
+                        </div>
+
+                        <!-- Sci-Fi Boarding Pass Widget -->
+                        <div id="boarding-pass" class="glass border-2 border-cosmic-cyan/30 rounded-2xl p-6 relative overflow-hidden font-mono text-xs text-slate-300 shadow-xl max-w-md mx-auto">
+                            <!-- Background accent logo watermark -->
+                            <div class="absolute -right-16 -bottom-16 opacity-10 text-cosmic-cyan pointer-events-none">
+                                <i data-lucide="rocket" class="w-64 h-64"></i>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                                <div>
+                                    <span class="text-xs font-bold tracking-widest text-white uppercase block">DESEAL ADVENTURES</span>
+                                    <span class="text-[9px] text-cosmic-cyan uppercase tracking-widest">Boarding Pass System</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-gray-400 uppercase">Flight Slot Status</span>
+                                    <span class="block text-emerald-400 font-bold tracking-widest text-xs uppercase animate-pulse">SCHEDULED</span>
+                                </div>
+                            </div>
+
+                            <!-- Grid info -->
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Passenger</span>
+                                    <span class="text-white font-bold block" id="ticket-passenger">Neil Armstrong</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Destination Coordinates</span>
+                                    <span class="text-cosmic-cyan font-bold block" id="ticket-destination">Kepler-22b</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Launch Site</span>
+                                    <span class="text-white font-bold block" id="ticket-origin">Lunar Station 4</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Cabin Pod Tier</span>
+                                    <span class="text-white font-bold block uppercase" id="ticket-cabin">Starlight Solarium</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Age Limit Validation</span>
+                                    <span class="text-white font-bold block" id="ticket-age">Age: 28 (Pass)</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] text-gray-400 block uppercase">Authorized Signature</span>
+                                    <span class="text-cosmic-purple font-bold block uppercase">DESEAL CONTROL</span>
+                                </div>
+                            </div>
+
+                            <!-- Barcode -->
+                            <div class="border-t border-white/10 pt-4 flex flex-col items-center justify-center space-y-2">
+                                <div class="w-full h-8 bg-slate-900 border border-white/5 flex items-center justify-center font-bold tracking-widest text-xs select-all text-gray-400">
+                                    |||| | |||||| || | |||| ||| |||| |
+                                </div>
+                                <span class="text-[8px] text-gray-500 tracking-widest" id="ticket-serial">SERIAL_DA_90382-X</span>
+                            </div>
+                        </div>
+
+                        <!-- Cosmic Souvenir Generator Block (Imagen Integration) -->
+                        <div class="glass border border-white/5 p-4 rounded-xl space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="p-2 bg-cosmic-cyan/10 rounded-lg text-cosmic-cyan">
+                                    <i data-lucide="image" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-white">Generate Your Boarding Souvenir</h5>
+                                    <p class="text-xs text-gray-400">Utilize our space telemetry model to generate an AI photo portrait of yourself during this voyage!</p>
+                                </div>
+                            </div>
+
+                            <button onclick="generateCosmicImage()" id="btn-generate-img" class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-cosmic-cyan"></i>
+                                <span>Generate Planetary Snapshot</span>
+                            </button>
+
+                            <!-- Live Generated Image Display with loaders -->
+                            <div id="ai-img-preview-container" class="hidden relative aspect-video w-full rounded-lg overflow-hidden border border-white/10 bg-slate-900 flex items-center justify-center">
+                                <div id="ai-img-spinner" class="absolute inset-0 flex flex-col items-center justify-center space-y-3 bg-slate-950/90 z-10">
+                                    <div class="w-8 h-8 border-4 border-cosmic-cyan border-t-transparent rounded-full animate-spin"></div>
+                                    <span class="text-xs text-gray-400 font-mono animate-pulse">TRANSMITTING TELEMETRY PROMPT...</span>
+                                </div>
+                                <img id="generated-souvenir-img" class="w-full h-full object-cover" alt="Cosmic souvenir boarding pass illustration" src="" onerror="this.src='https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 bg-space-950/80 border-t border-white/5 flex items-center justify-between shrink-0">
+                    <button id="modal-prev-btn" onclick="modalPrevStep()" class="px-4 py-2 text-xs text-gray-400 hover:text-white font-bold uppercase tracking-wider hidden">
+                        Back
+                    </button>
+                    <div class="flex-1"></div>
+                    <button id="modal-next-btn" onclick="modalNextStep()" class="px-6 py-3 bg-gradient-to-r from-cosmic-cyan to-blue-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center space-x-2 glow-cyan transition-all">
+                        <span>Continue</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTROLLER JS -->
+    <script>
+        // Set API key dynamically (provided by workspace environment at runtime)
+        const apiKey = ""; 
+
+        // Initial Data Structure for Planetary Destinations
+        const PLANETS = [
+            {
+                id: "kepler-22b",
+                name: "Kepler-22b",
+                code: "SECTOR CYGNUS-9",
+                price: "$14,500",
+                duration: "47 Days Standard",
+                atmosphere: "N2, O2, H2O vapor",
+                gravity: "2.4x Earth (heavy)",
+                temp: "22°C (average)",
+                hazard: "Minimal",
+                hazardColor: "text-emerald-400",
+                desc: "A stunning super-Earth orbiting in the habitable zone of a G-type star. It features a warm, boundless planetary ocean populated by floating luxury biodomes, glowing sea reefs, and zero-gravity water gliding.",
+                activities: ["Deep Oceanic Sub-Trek", "Liquid Glider Skiing", "Floating biodome dining"],
+                color: 0x06b6d4, // Cyan
+                roughness: 0.1,
+                metalness: 0.8,
+                hasRings: false
+            },
+            {
+                id: "europa",
+                name: "Europa",
+                code: "SECTOR JOVIAN-2",
+                price: "$21,000",
+                duration: "14 Days Quantum",
+                atmosphere: "Trace Oxygen",
+                gravity: "0.134x Earth (Light)",
+                temp: "-160°C (extreme cold)",
+                hazard: "Moderate Radiation",
+                hazardColor: "text-yellow-400",
+                desc: "An icy moon of Jupiter hosting a deep subsurface ocean. Our specialized excursions allow you to navigate underwater submarines through bioluminescent marine trenches protected by high-pressure fusion grids.",
+                activities: ["Cryo-Ice Cave Boarding", "Nuclear Fusion Submarine Cruise", "Magnetic Horizon Viewing"],
+                color: 0x93c5fd, // Light icy blue
+                roughness: 0.4,
+                metalness: 0.2,
+                hasRings: false
+            },
+            {
+                id: "mars",
+                name: "Mars",
+                code: "SECTOR SOL-4",
+                price: "$7,200",
+                duration: "6 Days Hyper-Drive",
+                atmosphere: "95% CO2, Trace N2",
+                gravity: "0.37x Earth",
+                temp: "-60°C",
+                hazard: "Dust Storm Season",
+                hazardColor: "text-amber-500",
+                desc: "The red frontier. Home to the solar system's largest canyons and grandest volcanoes. Traverse dusty plains on our high-speed magnetic rail rover, and sleep in fully pressurized dome penthouses with luxury soil gardens.",
+                activities: ["Olympus Mons Climbing", "Valleys Marineris Base Jump", "Red Dune Sandboarding"],
+                color: 0xf87171, // Red
+                roughness: 0.9,
+                metalness: 0.1,
+                hasRings: false
+            },
+            {
+                id: "kepler-186f",
+                name: "Kepler-186f",
+                code: "SECTOR CYGNUS-186",
+                price: "$19,800",
+                duration: "89 Days Warp",
+                atmosphere: "Dense N2, CO2",
+                gravity: "1.1x Earth",
+                temp: "-4°C (chilly)",
+                hazard: "Thick Vegetation",
+                hazardColor: "text-emerald-400",
+                desc: "The red-foliage exoplanet. Because its star radiates primarily in the infrared, the photosynthetic vegetation on this super-Earth is deeply crimson and indigo, creating a breathtaking and unforgettable bio-paradise.",
+                activities: ["Crimson Jungle Trekking", "Bioluminescent Forest Night Tour", "Sub-Canopy Gliding"],
+                color: 0xec4899, // Pink/Crimson
+                roughness: 0.7,
+                metalness: 0.3,
+                hasRings: true
+            }
+        ];
+
+        let selectedPlanetIndex = 0;
+        let bookingStep = 1;
+
+        // THREEJS Global Variables
+        let scene, camera, renderer, planetMesh, ringMesh;
+
+        // Initialize 3D Visualizer on load
+        function init3DVisualizer() {
+            const container = document.getElementById('three-canvas-container');
+            if (!container) return;
+
+            // Scene & Camera
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 6;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const directLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directLight.position.set(5, 3, 5);
+            scene.add(directLight);
+
+            const pointLight = new THREE.PointLight(0x8b5cf6, 1.5, 10);
+            pointLight.position.set(-3, -2, -3);
+            scene.add(pointLight);
+
+            // Build Planet Object
+            update3DPlanet(PLANETS[0]);
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+                if (planetMesh) {
+                    planetMesh.rotation.y += 0.007;
+                }
+                if (ringMesh) {
+                    ringMesh.rotation.z -= 0.003;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize Event
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // Rebuild/Update Planet based on chosen config
+        function update3DPlanet(planetData) {
+            // Remove existing meshes if any
+            if (planetMesh) scene.remove(planetMesh);
+            if (ringMesh) scene.remove(ringMesh);
+
+            // Planet Geometry
+            const geometry = new THREE.SphereGeometry(2, 64, 64);
+            
+            // Generate bumpy normal heights procedurally
+            const material = new THREE.MeshStandardMaterial({
+                color: planetData.color,
+                roughness: planetData.roughness,
+                metalness: planetData.metalness,
+                flatShading: false
+            });
+
+            planetMesh = new THREE.Mesh(geometry, material);
+            scene.add(planetMesh);
+
+            // Ring Option
+            if (planetData.hasRings) {
+                const ringGeometry = new THREE.RingGeometry(2.5, 3.8, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xd946ef, 
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+                ringMesh.rotation.x = Math.PI / 2.5;
+                scene.add(ringMesh);
+            }
+
+            // Update DOM title element near planet preview
+            const nameEl = document.getElementById('canvas-planet-name');
+            if (nameEl) nameEl.innerText = planetData.name;
+        }
+
+        // Initialize App & UI tabs
+        window.onload = function() {
+            lucide.createIcons();
+            init3DVisualizer();
+            buildPlanetTabs();
+            renderPlanetDetails(0);
+            populateBookingFormDropdowns();
+        }
+
+        // Navigation helpers
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                const offset = 80; // nav height
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = section.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Dynamically build Planet Tabs in UI
+        function buildPlanetTabs() {
+            const container = document.getElementById('planet-tabs');
+            container.innerHTML = '';
+            PLANETS.forEach((planet, index) => {
+                const button = document.createElement('button');
+                button.className = `px-6 py-3 rounded-full text-sm font-semibold tracking-wide border transition-all duration-300 ${index === selectedPlanetIndex ? 'bg-gradient-to-r from-cosmic-cyan to-indigo-600 text-white border-transparent shadow-lg shadow-cosmic-cyan/10' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`;
+                button.innerHTML = planet.name;
+                button.onclick = () => {
+                    selectedPlanetIndex = index;
+                    buildPlanetTabs(); // re-render state
+                    renderPlanetDetails(index);
+                    update3DPlanet(planet);
+                };
+                container.appendChild(button);
+            });
+        }
+
+        // Render selected Planet features & properties
+        function renderPlanetDetails(index) {
+            const planet = PLANETS[index];
+            document.getElementById('planet-title').innerText = planet.name;
+            document.getElementById('planet-code').innerText = planet.code;
+            document.getElementById('planet-desc').innerText = planet.desc;
+            document.getElementById('planet-duration').innerText = planet.duration;
+            document.getElementById('planet-atmosphere').innerText = planet.atmosphere;
+            document.getElementById('planet-gravity').innerText = planet.gravity;
+            document.getElementById('planet-temp').innerText = planet.temp;
+            document.getElementById('planet-price').innerText = planet.price;
+            
+            const hazardEl = document.getElementById('planet-hazard');
+            hazardEl.innerText = planet.hazard;
+            hazardEl.className = `text-sm font-bold ${planet.hazardColor}`;
+
+            // Activities list
+            const actsContainer = document.getElementById('planet-activities');
+            actsContainer.innerHTML = '';
+            planet.activities.forEach(act => {
+                const div = document.createElement('div');
+                div.className = "flex items-center space-x-3 bg-white/5 p-3 rounded-xl border border-white/5";
+                div.innerHTML = `
+                    <div class="w-2 h-2 rounded-full bg-cosmic-cyan"></div>
+                    <span class="text-xs text-gray-300 font-medium">${act}</span>
+                `;
+                actsContainer.appendChild(div);
+            });
+
+            // Recreate icons
+            lucide.createIcons();
+        }
+
+        // MODAL BOOKING FLOW SYSTEM
+        function openBookingModal() {
+            document.getElementById('booking-modal').classList.remove('hidden');
+            bookingStep = 1;
+            updateModalStepView();
+        }
+
+        function openBookingModalWithPlanet() {
+            const selectEl = document.getElementById('book-planet');
+            if (selectEl) {
+                selectEl.value = PLANETS[selectedPlanetIndex].id;
+            }
+            updateBookingCostCalculation();
+            openBookingModal();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function populateBookingFormDropdowns() {
+            const selectEl = document.getElementById('book-planet');
+            selectEl.innerHTML = '';
+            PLANETS.forEach(planet => {
+                const option = document.createElement('option');
+                option.className = "bg-space-950";
+                option.value = planet.id;
+                option.innerText = `${planet.name} (${planet.price})`;
+                selectEl.appendChild(option);
+            });
+        }
+
+        function updateBookingCostCalculation() {
+            const selectedPlanetId = document.getElementById('book-planet').value;
+            const cabinClass = document.getElementById('book-cabin').value;
+            const extraSpacewalk = document.getElementById('add-spacewalk').checked;
+            const extraCopilot = document.getElementById('add-copilot').checked;
+
+            const planetObj = PLANETS.find(p => p.id === selectedPlanetId);
+            if (!planetObj) return;
+
+            // Clean rate to number
+            let priceNum = parseInt(planetObj.price.replace(/[^0-9]/g, ''));
+            
+            // Class multiplier
+            if (cabinClass === 'premium') priceNum *= 1.5;
+            if (cabinClass === 'starlight') priceNum *= 2.2;
+
+            // Addons
+            if (extraSpacewalk) priceNum += 2500;
+            if (extraCopilot) priceNum += 1200;
+
+            // Print
+            document.getElementById('booking-live-price').innerText = `$${priceNum.toLocaleString()}`;
+        }
+
+        function modalNextStep() {
+            if (bookingStep < 3) {
+                bookingStep++;
+                updateModalStepView();
+            } else {
+                // Final submission complete
+                closeBookingModal();
+            }
+        }
+
+        function modalPrevStep() {
+            if (bookingStep > 1) {
+                bookingStep--;
+                updateModalStepView();
+            }
+        }
+
+        function updateModalStepView() {
+            // Hide all
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('modal-prev-btn').classList.add('hidden');
+
+            // Tabs Styling
+            document.getElementById('step-tab-1').className = "font-medium text-gray-400 pb-1";
+            document.getElementById('step-tab-2').className = "font-medium text-gray-400 pb-1";
+            document.getElementById('step-tab-3').className = "font-medium text-gray-400 pb-1";
+
+            if (bookingStep === 1) {
+                document.getElementById('step-1').classList.remove('hidden');
+                document.getElementById('step-tab-1').className = "font-bold text-cosmic-cyan pb-1 border-b-2 border-cosmic-cyan";
+                document.getElementById('modal-next-btn').innerHTML = '<span>Configure Route</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            } else if (bookingStep === 2) {
+                document.getElementById('step-2').classList.remove('hidden');
+                document.getElementById('modal-prev-btn').classList.remove('hidden');
+                document.getElementById('step-tab-2').className = "font-bold text-cosmic-cyan pb-1 border-b-2 border-cosmic-cyan";
+                document.getElementById('modal-next-btn').innerHTML = '<span>Generate Pass</span> <i data-lucide="shield-check" class="w-4 h-4"></i>';
+                updateBookingCostCalculation();
+            } else if (bookingStep === 3) {
+                document.getElementById('step-3').classList.remove('hidden');
+                document.getElementById('modal-prev-btn').classList.remove('hidden');
+                document.getElementById('step-tab-3').className = "font-bold text-emerald-400 pb-1 border-b-2 border-emerald-400";
+                document.getElementById('modal-next-btn').innerHTML = '<span>Seal Ticket</span> <i data-lucide="check" class="w-4 h-4"></i>';
+                
+                // Assemble boarding pass stats
+                const name = document.getElementById('book-name').value || "Commander Neil";
+                const origin = document.getElementById('book-origin').value || "Neo Tokyo Base";
+                const age = document.getElementById('book-age').value || "28";
+                const planetId = document.getElementById('book-planet').value;
+                const planetObj = PLANETS.find(p => p.id === planetId);
+                const cabin = document.getElementById('book-cabin').options[document.getElementById('book-cabin').selectedIndex].text;
+
+                document.getElementById('ticket-passenger').innerText = name;
+                document.getElementById('ticket-destination').innerText = planetObj ? planetObj.name : "Kepler-22b";
+                document.getElementById('ticket-origin').innerText = origin;
+                document.getElementById('ticket-cabin').innerText = cabin.split('(')[0].trim();
+                document.getElementById('ticket-age').innerText = `Age: ${age} (A Grade)`;
+                document.getElementById('ticket-serial').innerText = `SERIAL_DA_${Math.floor(Math.random() * 90000) + 10000}-X`;
+            }
+
+            lucide.createIcons();
+        }
+
+        // AI ASSISTANT PORTAL (Gemini integration with exponential backoff)
+        async function fetchGeminiApiResponse(userQuery) {
+            const systemPrompt = "You are the head navigation dispatcher and survival expert at Deseal Adventures. Give short, engaging, highly structured futuristic responses (max 4 lines) detailing packing lists, atmosphere conditions, safety precautions or travel schedules for specified planets.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text || "Unable to parse quantum response.";
+                    }
+                } catch (err) {
+                    // Suppress and fallback
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            return "Galactic communication relay offline. Please verify solar solar-flare status.";
+        }
+
+        function setAiPrompt(text) {
+            document.getElementById('ai-query-input').value = text;
+        }
+
+        const aiForm = document.getElementById('ai-query-form');
+        if (aiForm) {
+            aiForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const inputEl = document.getElementById('ai-query-input');
+                const query = inputEl.value;
+                if (!query) return;
+
+                const chatOutput = document.getElementById('ai-chat-output');
+
+                // Append User message
+                const userMsg = document.createElement('div');
+                userMsg.className = "bg-white/5 border border-white/10 p-3 rounded-xl text-gray-300 ml-6";
+                userMsg.innerHTML = `<span class="text-cosmic-purple font-bold block mb-1">TRANSMISSION SENT:</span> ${query}`;
+                chatOutput.appendChild(userMsg);
+                inputEl.value = '';
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+
+                // Loading Indicator
+                const loaderMsg = document.createElement('div');
+                loaderMsg.className = "bg-white/5 border border-white/5 p-3 rounded-xl text-gray-400 mr-6";
+                loaderMsg.id = "ai-loading-indicator";
+                loaderMsg.innerHTML = `<span class="animate-pulse">DECODING QUANTUM SIGNAL...</span>`;
+                chatOutput.appendChild(loaderMsg);
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+
+                // Fetch Answer
+                const responseText = await fetchGeminiApiResponse(query);
+
+                // Remove loading
+                const loader = document.getElementById('ai-loading-indicator');
+                if (loader) loader.remove();
+
+                // Append Bot message
+                const botMsg = document.createElement('div');
+                botMsg.className = "bg-cosmic-cyan/5 border border-cosmic-cyan/10 p-3 rounded-xl text-cyan-100 mr-6";
+                botMsg.innerHTML = `<span class="text-cosmic-cyan font-bold block mb-1">DISPATCH CONTROL RESPONSE:</span> ${responseText}`;
+                chatOutput.appendChild(botMsg);
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+            });
+        }
+
+        // SOUVENIR COSMIC IMAGE GENERATOR (Imagen 4.0 predict fallback)
+        async function generateCosmicImage() {
+            const container = document.getElementById('ai-img-preview-container');
+            const spinner = document.getElementById('ai-img-spinner');
+            const imgEl = document.getElementById('generated-souvenir-img');
+
+            container.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+
+            const planetId = document.getElementById('book-planet').value;
+            const planetObj = PLANETS.find(p => p.id === planetId);
+            const destinationName = planetObj ? planetObj.name : "Kepler-22b";
+
+            const promptText = `A stunning high fidelity cosmic retro tourism poster showing an astronaut standing on the surface of exoplanet ${destinationName} looking back at a massive luxury spacecraft and space stations, highly detailed art masterpiece.`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+
+            const payload = {
+                instances: { prompt: promptText },
+                parameters: { sampleCount: 1 }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        const base64Bytes = result.predictions?.[0]?.bytesBase64Encoded;
+                        if (base64Bytes) {
+                            imgEl.src = `data:image/png;base64,${base64Bytes}`;
+                            spinner.classList.add('hidden');
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // Fail silently and let retry handle
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+
+            // Fallback Unsplash space tourism images if call fails or rate limit
+            imgEl.src = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80";
+            spinner.classList.add('hidden');
+        }
+
+        // Toggle mobile menu helper
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', toggleMobileMenu);
+        }
+    </script>
+</body>
+</html>
